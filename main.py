@@ -9,21 +9,24 @@ class DrawingApp:
         self.root = root
         self.root.title("Рисовалка с сохранением в PNG")
 
-        self.image = Image.new("RGB", (600, 400), "white")
+        self.bg_color = 'white'
+        self.image = Image.new("RGB", (600, 400), color=self.bg_color)
         self.draw = ImageDraw.Draw(self.image)
 
-        self.canvas = tk.Canvas(root, width=600, height=400, bg='white')
+        self.canvas = tk.Canvas(root, width=600, height=400, bg=self.bg_color)
         self.canvas.pack()
 
         self.setup_ui()
 
         self.last_x, self.last_y = None, None
         self.pen_color = 'black'
+        self.pen_color_save = self.pen_color
 
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def set_brush(self, choice):
+        """  Выбор размера кисти  """
         self.brush_size_scale.set(int(choice))
 
     def setup_ui(self):
@@ -36,6 +39,12 @@ class DrawingApp:
 
         color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
+
+        pen_button = tk.Button(control_frame, text="Кисть", command=self.pen_image)
+        pen_button.pack(side=tk.LEFT)
+
+        eraser_button = tk.Button(control_frame, text="Ластик", command=self.eraser_image)
+        eraser_button.pack(side=tk.LEFT)
 
         save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
         save_button.pack(side=tk.LEFT)
@@ -88,6 +97,19 @@ class DrawingApp:
         Открывает стандартное диалоговое окно выбора цвета и устанавливает выбранный цвет как текущий для кисти.
         """
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
+        self.pen_color_save = self.pen_color
+
+    def pen_image(self):
+        """
+        Выбирает инструмент кисть. Возвращает сохраненное значение цвета кисти.
+        """
+        self.pen_color = self.pen_color_save
+
+    def eraser_image(self):
+        """
+        Устанавливает цвет кисти в цвет фона для инструмента ластик.
+        """
+        self.pen_color = self.bg_color
 
     def save_image(self):
         """
