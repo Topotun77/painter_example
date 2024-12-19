@@ -44,6 +44,8 @@ class DrawingApp:
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<Button-3>', self.pick_color)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
+        self.root.bind('<Control-s>', self.save_image)
+        self.root.bind('<Control-c>', self.choose_color)
 
     def set_brush(self, choice):
         """  Выбор размера кисти  """
@@ -84,7 +86,6 @@ class DrawingApp:
         self.menu_brush = tk.OptionMenu(control_frame, variable, *sizes, command=self.set_brush)
         self.menu_brush.pack(side=tk.LEFT)
 
-
     def paint(self, event):
         """
         Функция вызывается при движении мыши с нажатой левой кнопкой по холсту.
@@ -119,7 +120,7 @@ class DrawingApp:
         self.image = Image.new("RGB", (self.width, self.height), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-    def choose_color(self):
+    def choose_color(self, event=None):
         """
         Открывает стандартное диалоговое окно выбора цвета и устанавливает выбранный цвет как текущий для кисти.
         """
@@ -145,7 +146,7 @@ class DrawingApp:
         """
         self.pen_color = self.bg_color
 
-    def save_image(self):
+    def save_image(self, event=None):
         """
         Позволяет пользователю сохранить изображение, используя стандартное диалоговое окно для сохранения файла.
         В случае успешного сохранения выводится сообщение об этом.
