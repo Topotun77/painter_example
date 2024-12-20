@@ -35,11 +35,11 @@ class DrawingApp:
         self.canvas = tk.Canvas(root, width=self.width, height=self.height, bg=self.bg_color)
         self.canvas.pack(expand=True)
 
-        self.setup_ui()
-
         self.last_x, self.last_y = None, None
         self.pen_color = 'black'
         self.pen_color_save = self.pen_color
+
+        self.setup_ui()
 
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<Button-3>', self.pick_color)
@@ -76,6 +76,10 @@ class DrawingApp:
 
         eraser_button = tk.Button(control_frame, image=self.icon_eraser, text="Ластик", command=self.eraser_image)
         eraser_button.pack(side=tk.LEFT)
+
+        self.canvas_color = tk.Canvas(control_frame, width=20, height=20, bg=self.pen_color)
+        self.canvas_color.pack(side=tk.RIGHT)
+
 
         self.brush_size_scale = tk.Scale(control_frame, from_=5, to=20, orient=tk.HORIZONTAL)
         self.brush_size_scale.pack(side=tk.LEFT)
@@ -126,6 +130,8 @@ class DrawingApp:
         """
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
         self.pen_color_save = self.pen_color
+        self.canvas_color['bg'] = self.pen_color
+        # self.canvas_color
 
     def pick_color(self, event):
         """
@@ -133,6 +139,7 @@ class DrawingApp:
         """
         self.pen_color = "#{:02X}{:02X}{:02X}".format(*self.image.getpixel((event.x, event.y)))
         self.pen_color_save = self.pen_color
+        self.canvas_color['bg'] = self.pen_color
 
     def pen_image(self):
         """
