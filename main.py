@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import colorchooser, filedialog, messagebox
+from tkinter import colorchooser, filedialog, messagebox, simpledialog
 from PIL import Image, ImageDraw, ImageTk
 from settings import *
 from utilities import image_to_icon
@@ -31,8 +31,9 @@ class DrawingApp:
         # self.icon_pipette = image_to_icon(ICON_PIPETTE)
         self.icon_palette = image_to_icon(ICON_PALETTE)
         self.icon_eraser = image_to_icon(ICON_ERASER)
+        self.icon_resize = image_to_icon(ICON_RESIZE)
 
-        self.canvas = tk.Canvas(root, width=self.width, height=self.height, bg=self.bg_color)
+        self.canvas = tk.Canvas(self.root, width=self.width, height=self.height, bg=self.bg_color)
         self.canvas.pack(expand=True)
 
         self.last_x, self.last_y = None, None
@@ -59,11 +60,15 @@ class DrawingApp:
         save_button = tk.Button(control_frame, image=self.icon_save, text="Сохранить", command=self.save_image)
         save_button.pack(side=tk.LEFT)
 
-        save_button = tk.Button(control_frame, image=self.icon_insert, text="Вставить", command=self.image_insert)
-        save_button.pack(side=tk.LEFT)
+        insert_button = tk.Button(control_frame, image=self.icon_insert, text="Вставить", command=self.image_insert)
+        insert_button.pack(side=tk.LEFT)
 
         clear_button = tk.Button(control_frame, image=self.icon_new, text="Очистить", command=self.clear_canvas)
         clear_button.pack(side=tk.LEFT)
+
+        resize_button = tk.Button(control_frame, image=self.icon_resize, text="Изменить размер",
+                                  command=self.image_resize)
+        resize_button.pack(side=tk.LEFT)
 
         color_button = tk.Button(control_frame, image=self.icon_palette, text="Палитра", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
@@ -78,8 +83,7 @@ class DrawingApp:
         eraser_button.pack(side=tk.LEFT)
 
         self.canvas_color = tk.Canvas(control_frame, width=20, height=20, bg=self.pen_color)
-        self.canvas_color.pack(side=tk.RIGHT)
-
+        self.canvas_color.pack(side=tk.RIGHT, padx=8)
 
         self.brush_size_scale = tk.Scale(control_frame, from_=5, to=20, orient=tk.HORIZONTAL)
         self.brush_size_scale.pack(side=tk.LEFT)
@@ -121,8 +125,29 @@ class DrawingApp:
         Очищает холст, удаляя все нарисованное, и пересоздает объекты Image и ImageDrawдля нового изображения.
         """
         self.canvas.delete("all")
-        self.image = Image.new("RGB", (self.width, self.height), "white")
+        self.image = Image.new("RGB", (self.width, self.height), color=self.bg_color)
         self.draw = ImageDraw.Draw(self.image)
+
+    def image_resize(self):
+        """
+        Изменяет размер холста. При изменении размера картинка масштабируется.
+        После чего можно продолжить рисовать.
+        """
+        try:
+            x, y = map(int, simpledialog.askstring('Input', 'Введите ширину и высоту изображения (разделитель - пробел):',
+                                       parent=self.root).split())
+        except ValueError:
+            messagebox.showerror(title='Ошибка', message='Вы ввели неверные значения')
+            return
+        except AttributeError:
+            return
+        self.width, self.height = x, y
+        self.image = self.image.resize((x, y))
+        # self.image.show()
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.draw = ImageDraw.Draw(self.image)
+        self.canvas.config(width=self.width, height=self.height)
+        self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
 
     def choose_color(self, event=None):
         """
@@ -131,7 +156,6 @@ class DrawingApp:
         self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
         self.pen_color_save = self.pen_color
         self.canvas_color['bg'] = self.pen_color
-        # self.canvas_color
 
     def pick_color(self, event):
         """
@@ -169,12 +193,9 @@ class DrawingApp:
         """
         Вставить картинку из файла.
         """
-        image = Image.open(filedialog.askopenfile(filetypes=[("JPG files", ".jpg"), ("PNG files", ".png")]).name)
-        self.photo = ImageTk.PhotoImage(image)
-        # self.image.paste(self.photo, (0, 0, 600, 400))
-        # for x in range(self.photo.width()):
-        #     for y in range(self.photo.height()):
-        #         self.image.putpixel((x, y), self.photo.(x, y))
+        self.image = Image.open(filedialog.askopenfile(filetypes=[("JPG files", ".jpg"), ("PNG files", ".png")]).name)
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.draw = ImageDraw.Draw(self.image)
         self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
 
 
