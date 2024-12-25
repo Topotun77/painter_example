@@ -1,6 +1,6 @@
 import tkinter as tk
-from tkinter import colorchooser, filedialog, messagebox, simpledialog
-from PIL import Image, ImageDraw, ImageTk
+from tkinter import colorchooser, filedialog, messagebox, simpledialog, font
+from PIL import Image, ImageDraw, ImageTk, ImageFont, ImageGrab
 from settings import *
 from utilities import image_to_icon
 
@@ -19,8 +19,11 @@ class DrawingApp:
             pass
 
         self.bg_color = 'white'
+        self.pen_color = 'black'
         self.width = 600
         self.height = 400
+        self.text = ''
+        self.font = 'Times 20'
         self.image = Image.new("RGB", (self.width, self.height), color=self.bg_color)
         self.draw = ImageDraw.Draw(self.image)
 
@@ -32,12 +35,13 @@ class DrawingApp:
         self.icon_palette = image_to_icon(ICON_PALETTE)
         self.icon_eraser = image_to_icon(ICON_ERASER)
         self.icon_resize = image_to_icon(ICON_RESIZE)
+        self.icon_text = image_to_icon(ICON_TEXT)
+        self.icon_fon = image_to_icon(ICON_FON)
 
         self.canvas = tk.Canvas(self.root, width=self.width, height=self.height, bg=self.bg_color)
         self.canvas.pack(expand=True)
 
         self.last_x, self.last_y = None, None
-        self.pen_color = 'black'
         self.pen_color_save = self.pen_color
 
         self.setup_ui()
@@ -73,14 +77,17 @@ class DrawingApp:
         color_button = tk.Button(control_frame, image=self.icon_palette, text="Палитра", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
 
-        # pipette_button = tk.Button(control_frame, image=self.icon_pipette, text="Пипетка", command=self.choose_color)
-        # pipette_button.pack(side=tk.LEFT)
+        fon_button = tk.Button(control_frame, image=self.icon_fon, text="Фон", command=self.choose_fon)
+        fon_button.pack(side=tk.LEFT)
 
         pen_button = tk.Button(control_frame, image=self.icon_brash, text="Кисть", command=self.pen_image)
         pen_button.pack(side=tk.LEFT)
 
         eraser_button = tk.Button(control_frame, image=self.icon_eraser, text="Ластик", command=self.eraser_image)
         eraser_button.pack(side=tk.LEFT)
+
+        text_button = tk.Button(control_frame, image=self.icon_text, text="Текст", command=self.insert_text)
+        text_button.pack(side=tk.LEFT)
 
         self.canvas_color = tk.Canvas(control_frame, width=20, height=20, bg=self.pen_color)
         self.canvas_color.pack(side=tk.RIGHT, padx=8)
@@ -134,8 +141,8 @@ class DrawingApp:
         После чего можно продолжить рисовать.
         """
         try:
-            x, y = map(int, simpledialog.askstring('Input', 'Введите ширину и высоту изображения (разделитель - пробел):',
-                                       parent=self.root).split())
+            x, y = map(int, simpledialog.askstring('Изменение размера изображения', 'Введите ширину и высоту изображения (разделитель - пробел):',
+                                                   parent=self.root).split())
         except ValueError:
             messagebox.showerror(title='Ошибка', message='Вы ввели неверные значения')
             return
@@ -153,9 +160,20 @@ class DrawingApp:
         """
         Открывает стандартное диалоговое окно выбора цвета и устанавливает выбранный цвет как текущий для кисти.
         """
-        self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
-        self.pen_color_save = self.pen_color
-        self.canvas_color['bg'] = self.pen_color
+        pen_color = colorchooser.askcolor(color=self.pen_color, title='Цвет кисти')[1]
+        if pen_color:
+            self.pen_color = pen_color
+            self.pen_color_save = self.pen_color
+            self.canvas_color['bg'] = self.pen_color
+
+    def choose_fon(self, event=None):
+        """
+        Открывает стандартное диалоговое окно выбора цвета фона.
+        """
+        bg_color = colorchooser.askcolor(color=self.bg_color, title='Цвет фона')[1]
+        if bg_color:
+            self.bg_color = bg_color
+            self.canvas.config(background=self.bg_color)
 
     def pick_color(self, event):
         """
@@ -176,6 +194,36 @@ class DrawingApp:
         Устанавливает цвет кисти в цвет фона для инструмента ластик.
         """
         self.pen_color = self.bg_color
+
+    def insert_text(self):
+        """
+        Вставить текст. Запрашиваем текст для вставки и параметры шрифта.
+        Цвет текста берется из цвета кисти.
+        """
+        self.text = simpledialog.askstring('Добавить текст', 'Введите текст для вставки:',
+                                           initialvalue=self.text, parent=self.root)
+        if self.text:
+            self.root.tk.call("tk", "fontchooser", "configure", "-font", self.font,
+                              "-command", self.root.register(self.font_changed))
+            self.root.tk.call("tk", "fontchooser", "show")
+            self.canvas.bind('<Button-1>', self.put_text)
+
+    def font_changed(self, font):
+        """
+        Сохранить полученное значение шрифта.
+        :param font: Выбранный шрифт.
+        """
+        self.font = font
+
+    def put_text(self, event):
+        """
+        Вставить текст в изображение.
+        :param event: Событие с координатами точки клика мыши.
+        """
+        x, y = event.x, event.y
+        self.draw.text((x, y), text=self.text, fill=self.pen_color)
+        self.canvas.create_text(x, y, text=self.text, fill=self.pen_color, font=self.font)
+        self.canvas.unbind('<Button-1>')
 
     def save_image(self, event=None):
         """

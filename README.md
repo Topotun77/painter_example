@@ -12,11 +12,15 @@
 • Добавлен инструмент в виде пипетки для выбора цвета.  
 • Добавлены функциональные горячие клавиши быстрого действия Ctrl-C и Ctrl-S.  
 • Добавлен предварительный просмотр цвета кисти.  
-• **(NEW)** Добавлена возможность изменения размера холста.  
+• Добавлена возможность изменения размера холста.  
+• **(NEW)** Добавлена возможность вставки текста на изображение.  
+• **(NEW)** Добавлена возможность изменения цвета фона.  
 
+### Вставка текста:
+![img01](https://github.com/Topotun77/painter_example/blob/master/ScreenShots/n004.jpg?raw=true)
 ### Изменение размера изображения:
 ![img01](https://github.com/Topotun77/painter_example/blob/master/ScreenShots/n003.jpg?raw=true)
 ### Скриншот приложения с элементами `Ластик` и `Кисть`:
 ![img01](https://github.com/Topotun77/painter_example/blob/master/ScreenShots/n002.jpg?raw=true)
-### Скриншот приложения:
+### Первая версия приложения:
 ![img01](https://github.com/Topotun77/painter_example/blob/master/ScreenShots/n001.jpg?raw=true)
